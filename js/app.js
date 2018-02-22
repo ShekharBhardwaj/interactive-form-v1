@@ -7,12 +7,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     let form = document.querySelector('form');
     div.appendChild(button);
     form.appendChild(div);
-    //$('button').attr('disabled','true');
+    $('button').prop( "disabled", true );
     let cardNumberValid = false;
     let zipValid = false;
     let cvvValid = false;
     let paymentMethod = false;
     let total = 0;
+    let ccradSelection = false;
     const colorList = $('#color option');
     const labelList = $('.activities label');
     const price = [];
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 isValid = false;
             }
         } else {
-            textHtml.style.borderColor = ''
+            textHtml.style.borderColor = '';
             $('#nameError').hide();
             isValid = true;
 
@@ -53,8 +54,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
             }
 
         } else {
-            emailHtml.style.borderColor = ''
-            $('#mailError').hide()
+            emailHtml.style.borderColor = '';
+            $('#mailError').hide();
             isValid = true;
         }
         return isValid;
@@ -89,38 +90,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
             isCrediCardNumberValid &&
             isZipValid &&
             isCvvValid) {
-            $('button').attr('disabled','');
-
+            $('button').prop( "disabled", false );
         } else {
             if (isPaymnetMethod) {
-
-                if($("#zipErr").length == 0 && !isZipValid) {
+                if($("#zipErr").length == 0 && !isZipValid || !$('#cc-num').value.length > 0) {
                     $('<label id="zipErr" class="act">Zip Code must be of 5 digit</label>').insertBefore('button');
                     $('#zipErr').css("color","red");
+                }else {
                     $('#zipErr').show();
                 }
 
-                if($("#ccErr").length == 0 && !isCrediCardNumberValid) {
+                if($("#ccErr").length == 0 && !isCrediCardNumberValid || !$('#zip').value.length > 0)  {
                     $('<label id="ccErr" class="act">CrediCard Number must be of 16 digit</label>').insertBefore('button');
                     $('#ccErr').css("color","red");
-                    $('#ccErr').show();
+
+                }else{
+                    $('#ccErr').show()
                 }
 
-                if($("#cvvErr").length == 0 && !isCvvValid) {
+                if($("#cvvErr").length == 0 && !isCvvValid || !$('#zip').value.length > 0) {
                     $('<label id="cvvErr" class="act">CVV Number must be of 3 digit</label>').insertBefore('button');
                     $('#cvvErr').css("color","red");
-                    $('#cvvErr').show()
+
+                } else {
+                    $('#cvvErr').show();
                 }
             } else {
 
                 if($("#payErr").length == 0 && !isPaymnetMethod) {
                     $('<label id="payErr">Select one of the payment method please</label>').insertBefore('button');
                     $('#payErr').css("color","red");
-                }
-                $('#payErr').show();
+                } else { $('#payErr').show();}
+
 
             }
-
+            console.log('disabled');
         }
 
     }
@@ -130,7 +134,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
         if(e.target.value.length > 0){
             $('#nameError').hide();
-            $('#nameError').css("border-color","");
+            $('#name').css("border-color","");
         }
 
     });
@@ -139,7 +143,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
         if(e.target.value.length > 0){
             $('#mailError').hide();
-            $('#mailError').css("border-color","");
+            $('#mail').css("border-color","");
         }
 
     });
@@ -243,7 +247,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 if($(labelList[i].children[0]).is(':checked')){
                     let price = parseInt(labelList[i].textContent.split('$')[1]);
 
-                    priceTotal.push(price)
+                    priceTotal.push(price);
             }
         }
         total = priceTotal.reduce((a, x) => a + x);
@@ -259,14 +263,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
            $('#cc-num').focus();
            divp[0].style.display = 'none';
            divp[1].style.display = 'none';
-           cardNumberValid = true;
-           zipValid = true;
-           cvvValid = true;
+           cardNumberValid = false;
+           zipValid = false;
+           cvvValid = false;
        } else if(payment === 'PayPal'){
            divp[0].style.display = '';
            divp[1].style.display = 'none';
            $('#zipErr').hide();
-           $('#cccErr').hide();
+           $('#ccErr').hide();
            $('#cvvErr').hide();
            $('#credit-card').hide();
            cardNumberValid = true;
@@ -277,7 +281,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
            divp[0].style.display = 'none';
            divp[1].style.display = '';
            $('#zipErr').hide();
-           $('#cccErr').hide();
+           $('#ccErr').hide();
            $('#cvvErr').hide();
            $('#credit-card').hide();
            cardNumberValid = true;
@@ -287,26 +291,34 @@ document.addEventListener('DOMContentLoaded', ()=>{
            divp[0].style.display = 'none';
            divp[1].style.display = 'none';
            $('#zipErr').hide();
-           $('#cccErr').hide();
+           $('#ccErr').hide();
            $('#cvvErr').hide();
            $('#credit-card').hide();
-           paymentMethod = false;
+           paymentMethod = true;
+           cardNumberValid = true;
+           zipValid = true;
+           cvvValid = true;
        } else {
            divp[0].style.display = 'none';
            divp[1].style.display = 'none';
            $('#zipErr').hide();
-           $('#cccErr').hide();
+           $('#ccErr').hide();
            $('#cvvErr').hide();
            $('#credit-card').hide();
+           paymentMethod = true;
+           cardNumberValid = true;
+           zipValid = true;
+           cvvValid = true;
        }
             basicInfoValidation();
-            activitiesValidation()
+            activitiesValidation();
     }
     );
 
     $('#cc-num').on('input', (e)=>{
         let ccNumber = e.target.value;
         if(ccNumber.length < 16 || ccNumber.length>16 || !/^\d+$/.test(ccNumber)){
+            cardNumberValid = false;
             if($("#ccErr").length == 0) {
                 $('<label id="ccErr" class="act">CrediCard Number must be of 16 digits and in numbers</label>').insertBefore('button');
                 $('#ccErr').css("color","red");
@@ -321,9 +333,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
             $('#ccErr').hide();
         }
         basicInfoValidation();
-        activitiesValidation()
+        activitiesValidation();
     });
     $('#zip').on('input', (e)=>{
+        zipValid = flase;
         let zip = e.target.value;
         if(zip.length < 5 || zip.length > 5 || !/^\d+$/.test(zip)){
             if($("#zipErr").length == 0) {
@@ -343,6 +356,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         activitiesValidation()
     });
     $('#cvv').on('input', (e)=>{
+        cvvValid = false;
         let cvv = e.target.value;
         if(cvv.length < 3 || cvv.length > 3 || !/^\d+$/.test(cvv)){
             if($("#cvvErr").length == 0) {
@@ -359,7 +373,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
             $('#cvvErr').hide()
         }
         basicInfoValidation();
-        activitiesValidation()
+        activitiesValidation();
+        buttonEnable();
     });
 
     $('.btn').on('mouseover', ()=>{
